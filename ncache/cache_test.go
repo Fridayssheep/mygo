@@ -94,3 +94,39 @@ func TestCache_RedisChain(t *testing.T) {
 	// 清理
 	c.Delete(ctx, testKey)
 }
+
+func TestCache_Concurrent(t *testing.T) {
+	// 并发安全性测试
+	c := New()
+	ctx := context.Background()
+	key := "concurrent_key"
+
+	// 初始值
+	c.Set(ctx, key, 0)
+
+	// 启动 10 个 goroutine 并发读写
+	done := make(chan bool)
+	for i := 0; i < 114; i++ {
+		go func(id int) {
+			for j := 0; j < 100; j++ {
+				// 混合读写操作
+				c.Set(ctx, key, j)
+				var val int
+				c.Get(ctx, key, &val)
+			}
+			done <- true
+		}(i)
+	}
+
+	// 等待所有 goroutine 完成
+	for i := 0; i < 114; i++ {
+		<-done
+	}
+
+	// 如果能运行到这里没有 panic，说明是并发安全的
+	var finalVal int
+	_, err := c.Get(ctx, key, &finalVal)
+	if err != nil {
+		t.Errorf("Final get failed: %v", err)
+	}
+}
