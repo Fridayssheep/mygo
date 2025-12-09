@@ -15,11 +15,11 @@ import (
 func New(conf Config) (*officialAccount.OfficialAccount, error) {
 	l := nlog.Pick(conf.Log)
 	client := nesty.Pick(conf.Resty)
-	rdb := nedis.Pick(conf.Redis)
 
 	var kernelCache cache.CacheInterface
 	switch conf.Cache.Driver {
 	case CacheDriverRedis:
+		rdb := nedis.Pick(conf.Redis)
 		gr := cache.NewGRedis(&redis.UniversalOptions{})
 		gr.Pool = rdb
 		kernelCache = gr
