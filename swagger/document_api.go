@@ -230,7 +230,7 @@ func DocumentHandler(engine *gin.Engine) gin.HandlerFunc {
 			responses := map[string]Response{
 				"200": ParseApiStandResponse(t, businessStatusCodes),
 			}
-			if failureResponse, exist := GenerateApifailureResponse(businessStatusCodes); exist {
+			if failureResponse, exist := GenerateApiFailureResponse(businessStatusCodes); exist {
 				responses["default"] = failureResponse
 			}
 

@@ -1,7 +1,9 @@
 package swagger
 
 import (
+	"mime/multipart"
 	"reflect"
+	"time"
 )
 
 func StructEmpty(t reflect.Type, desc string, nameKey string) *Property {
@@ -38,8 +40,12 @@ func Struct(t reflect.Type, desc string, nameKey string) *Property {
 		case reflect.Array, reflect.Slice:
 			property.Properties[Name(tx, nameKey)], required = ArrayTag(tx, Array(txt, Desc(tx), nameKey)), Required(tx)
 		case reflect.Struct:
-			// 如果是匿名结构体，不需要生成结构体采用平铺的方式展示字段
-			if tx.Anonymous {
+			if tx.Type == reflect.TypeOf(time.Time{}) {
+				property.Properties[Name(tx, nameKey)], required = Time(txt, Desc(tx)), Required(tx)
+			} else if tx.Type == reflect.TypeOf(multipart.FileHeader{}) {
+				Output("不支持的响应类型[multipart.FileHeader]\n")
+			} else if tx.Anonymous {
+				// 如果是匿名结构体，不需要生成结构体采用平铺的方式展示字段
 				op := Struct(txt, Desc(tx), nameKey)
 				for k, v := range op.Properties {
 					property.Properties[k] = v
@@ -260,5 +266,13 @@ func Boolean(t reflect.Type, desc string) *Property {
 	return &Property{
 		Description: desc,
 		Type:        "boolean",
+	}
+}
+
+func Time(t reflect.Type, desc string) *Property {
+	return &Property{
+		Description: desc,
+		Type:        "string",
+		Format:      "date-time",
 	}
 }
