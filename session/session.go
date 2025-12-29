@@ -16,7 +16,7 @@ import (
 
 const defaultConfigKey = "session"
 
-const UidKey = "_session_uid_"
+const IdentityKey = "_session_identity_"
 
 // Pick 获取指定实例
 func Pick(keys ...string) gin.HandlerFunc {
@@ -65,31 +65,32 @@ func Pick(keys ...string) gin.HandlerFunc {
 	return sessions.Sessions(conf.Name, store)
 }
 
-// SetUid 设置uid到session
-func SetUid(ctx *gin.Context, uid string) error {
+// SetIdentity 设置 identity 到session
+func SetIdentity[T any](ctx *gin.Context, identity T) error {
 	session := sessions.Default(ctx)
-	session.Set(UidKey, uid)
+	session.Set(IdentityKey, identity)
 	return session.Save()
 }
 
-// GetUid 获取session中的uid
-// 注意：该函数需在 SetUid 函数进行设置后使用
-func GetUid(ctx *gin.Context) (string, error) {
+// GetIdentity 获取 session 中的 identity
+// 注意：该函数需在 SetIdentity 函数进行设置后使用
+func GetIdentity[T any](ctx *gin.Context) (T, error) {
+	var zero T
 	session := sessions.Default(ctx)
-	v := session.Get(UidKey)
+	v := session.Get(IdentityKey)
 	if v == nil {
-		return "", fmt.Errorf("%w: 当前session中未设置[%s]", kit.ErrNotFound, UidKey)
+		return zero, fmt.Errorf("%w: 当前session中未设置[%s]", kit.ErrNotFound, IdentityKey)
 	}
-	uid, ok := v.(string)
+	identity, ok := v.(T)
 	if !ok {
-		return "", fmt.Errorf("%w: 当前session设置[%s]类型错误", kit.ErrDataFormat, UidKey)
+		return zero, fmt.Errorf("%w: 当前session设置[%s]类型错误", kit.ErrDataFormat, IdentityKey)
 	}
-	return uid, nil
+	return identity, nil
 }
 
-// DeleteUid 删除session中的uid
-func DeleteUid(ctx *gin.Context) error {
+// DeleteIdentity 删除 session 中的 identity
+func DeleteIdentity(ctx *gin.Context) error {
 	session := sessions.Default(ctx)
-	session.Delete(UidKey)
+	session.Delete(IdentityKey)
 	return session.Save()
 }
