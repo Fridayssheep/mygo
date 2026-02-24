@@ -38,6 +38,21 @@ func Required(sf reflect.StructField) bool {
 			return true
 		}
 	}
+
+	jsonTag := sf.Tag.Get("json")
+	if jsonTag == "-" {
+		return false
+	}
+
+	if jsonTag != "" {
+		jsonList := strings.SplitSeq(jsonTag, ",")
+		for part := range jsonList {
+			if part == "omitempty" {
+				return false
+			}
+		}
+		return true
+	}
 	return false
 }
 
