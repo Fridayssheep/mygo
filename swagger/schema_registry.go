@@ -164,6 +164,9 @@ func (r *schemaRegistry) buildArraySchema(t reflect.Type, desc string, nameKey s
 	itemType := derefSchemaType(t.Elem())
 	itemDesc := "[" + itemType.Kind().String() + "]子项信息"
 	property.Items = r.buildSchemaForType(itemType, itemDesc, nameKey, requiredFunc)
+	if property.Items == nil {
+		return nil
+	}
 	return property
 }
 
