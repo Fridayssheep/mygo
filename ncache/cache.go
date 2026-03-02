@@ -12,8 +12,8 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 )
 
-// 将 CacheManager 定义为接口，以便于扩展和替换实现
-// 好用爱用
+// CacheManager 抽象了缓存的通用读写与失效操作，用于统一访问不同缓存实现
+// 通过接口隔离具体缓存后端（如内存、Redis、多级缓存链），便于在不同场景下替换实现并支持后续扩展新存储
 type CacheManager interface {
 	Get(ctx context.Context, key any, returnObj interface{}) (interface{}, error)
 	Set(ctx context.Context, key any, object interface{}, options ...store.Option) error
